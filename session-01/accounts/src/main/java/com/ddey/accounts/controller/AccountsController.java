@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping(path = "/api/accounts")
+@RequestMapping(path = "/api/accounts" , produces = {MediaType.APPLICATION_JSON_VALUE})
 public class AccountsController {
 
     @GetMapping("/msg")
