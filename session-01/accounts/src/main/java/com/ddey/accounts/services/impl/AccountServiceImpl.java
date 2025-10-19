@@ -9,43 +9,63 @@ import com.ddey.accounts.mapper.CustomerMapper;
 import com.ddey.accounts.repository.AccountRepository;
 import com.ddey.accounts.repository.CustomerRepository;
 import com.ddey.accounts.services.IAccountServices;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
 
 @Service
-@AllArgsConstructor
 public class AccountServiceImpl implements IAccountServices {
 
     private final CustomerRepository customerRepository;
     private final AccountRepository accountRepository;
 
-    @Override
-    public void createAccount(CustomerDto customerDto) {
-        Customer customer = CustomerMapper.mapToCustomer(customerDto , new Customer());
-
-        Optional<Customer> optinalCustomer = customerRepository
-                .findByMobileNumberAndEmail(customer.getMobileNumber() , customer.getEmail());
-
-        if (optinalCustomer.isPresent()){
-            throw new CustomerAlreadyExist("Customer already exist with mobile number "+
-                    customerDto.getMobileNumber());
-        }
-
-        Customer saveCustomer = customerRepository.save(customer);
-        accountRepository.save(createNewAccount(saveCustomer));
+    // Constructor for dependency injection (Lombok removed)
+    public AccountServiceImpl(CustomerRepository customerRepository, AccountRepository accountRepository) {
+        this.customerRepository = customerRepository;
+        this.accountRepository = accountRepository;
     }
 
-    private Accounts createNewAccount(Customer customer){
-        Accounts newAccounts = new Accounts();
-        newAccounts.setCustomerId(customer.getCustomerId());
-        long randomAccountNumber = 1000000000L + new Random().nextInt(900000000);
-        // generates 10-digit account numbers (1,000,000,000 - 1,899,999,999)
-        newAccounts.setAccountNumber(randomAccountNumber);
-        newAccounts.setAccountType(AccountsConstants.SAVINGS);
-        newAccounts.setBranchAddress(AccountsConstants.ADDRESS);
-        return newAccounts;
+    @Override
+    public void createAccount(CustomerDto customerDto) {
+        // Map DTO to Entity
+        Customer customer = CustomerMapper.mapToCustomer(customerDto, new Customer());
+
+        // Check if customer already exists
+        Optional<Customer> optionalCustomer = customerRepository
+                .findByMobileNumberAndEmail(customer.getMobileNumber(), customer.getEmail());
+
+        if (optionalCustomer.isPresent()) {
+            throw new CustomerAlreadyExist("Customer already exists with mobile number "
+                    + customerDto.getMobileNumber());
+        }
+        customer.setCreatedAt(LocalDateTime.now());
+        customer.setUpdatedAt(LocalDateTime.now());
+
+        // Save new customer
+        Customer savedCustomer = customerRepository.save(customer);
+
+        // Create and save account for the customer
+        accountRepository.save(createNewAccount(savedCustomer));
+    }
+
+    // Helper method to create a new account
+    private Accounts createNewAccount(Customer customer) {
+        Accounts newAccount = new Accounts();
+        newAccount.setCustomerId(customer.getCustomerId());
+
+        // Generate a 10-digit random account number
+        long randomAccountNumber = 1_000_000_000L + (long) new Random().nextInt(900_000_000);
+        newAccount.setAccountNumber(randomAccountNumber);
+
+        // Set timestamps
+        newAccount.setCreatedAt(LocalDateTime.now());
+        newAccount.setUpdatedAt(LocalDateTime.now());
+
+        newAccount.setAccountType(AccountsConstants.SAVINGS);
+        newAccount.setBranchAddress(AccountsConstants.ADDRESS);
+
+        return newAccount;
     }
 }
