@@ -1,11 +1,12 @@
 package com.ddey.accounts.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
-public class ResonseDto {
+public class ResponseDto {
     private String statusCode;
     private String statusMsg;
 }
