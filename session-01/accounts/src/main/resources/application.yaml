@@ -14,3 +14,5 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+    // we can use the application.propertise file also, the format will be different from .yaml file 
