@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "/api/accounts" , produces = {MediaType.APPLICATION_JSON_VALUE})
 public class AccountsController {
 
-    private final IAccountServices iAccountServices;
+    private final IAccountServices iAccountServices; // Service interface dependency will we added and but @Service will be added in the servie implementation class
 
     public AccountsController(IAccountServices iAccountServices) {
         this.iAccountServices = iAccountServices;
