@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping(path = "/api/accounts" , produces = {MediaType.APPLICATION_JSON_VALUE})
+@RequestMapping(path = "/api/accounts" , produces = {MediaType.APPLICATION_JSON_VALUE})//produces = {MediaType.APPLICATION_JSON_VALUE}.. this produces the data in the json format even if the return type is string
 public class AccountsController {
 
     private final IAccountServices iAccountServices; // Service interface dependency will we added and but @Service will be added in the servie implementation class
