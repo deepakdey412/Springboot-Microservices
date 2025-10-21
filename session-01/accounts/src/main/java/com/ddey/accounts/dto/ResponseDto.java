@@ -1,5 +1,5 @@
 package com.ddey.accounts.dto;
-
+//We can also use the mapper dependency instead of dta classes
 public class ResponseDto {
 
     private String statusCode;
