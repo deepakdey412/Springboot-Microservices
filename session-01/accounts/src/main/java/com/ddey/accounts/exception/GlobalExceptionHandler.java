@@ -24,17 +24,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
-        MethodArgumentNotValidException exception , HttpHeaders headers , HttpStatusCode  statusCode , WebRequest request){
-        Map<String,String> errors = new HashMap<>();
+            MethodArgumentNotValidException exception,
+            HttpHeaders headers,
+            HttpStatusCode statusCode,
+            WebRequest request) {
+
+        Map<String, String> errors = new HashMap<>();
+
         List<ObjectError> errorList = exception.getBindingResult().getAllErrors();
 
         errorList.forEach(error -> {
-            String fieldName = ((FieldError)errors).getField();
+            String fieldName = ((FieldError) error).getField();   // FIXED
             String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName,errorMessage);
+            errors.put(fieldName, errorMessage);
         });
+
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+
 
     @ExceptionHandler(CustomerAlreadyExist.class)
     public ResponseEntity<ErrorDto> handleCustomerAlreadyExist(CustomerAlreadyExist exception,
