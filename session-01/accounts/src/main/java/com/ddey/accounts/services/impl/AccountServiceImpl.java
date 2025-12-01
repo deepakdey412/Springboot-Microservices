@@ -1,10 +1,13 @@
 package com.ddey.accounts.services.impl;
 
 import com.ddey.accounts.constants.AccountsConstants;
+import com.ddey.accounts.dto.AccountDto;
 import com.ddey.accounts.dto.CustomerDto;
 import com.ddey.accounts.entity.Accounts;
 import com.ddey.accounts.entity.Customer;
 import com.ddey.accounts.exception.CustomerAlreadyExist;
+import com.ddey.accounts.exception.ResourceNotFound;
+import com.ddey.accounts.mapper.AccountMapper;
 import com.ddey.accounts.mapper.CustomerMapper;
 import com.ddey.accounts.repository.AccountRepository;
 import com.ddey.accounts.repository.CustomerRepository;
@@ -42,13 +45,15 @@ public class AccountServiceImpl implements IAccountServices {
         }
         customer.setCreatedAt(LocalDateTime.now());
         customer.setUpdatedAt(LocalDateTime.now());
-
+        customer.setCreatedBy("Bank PO");
+        customer.setUpdatedBy("Bank Manager");
         // Save new customer
         Customer savedCustomer = customerRepository.save(customer);
 
         // Create and save account for the customer
         accountRepository.save(createNewAccount(savedCustomer));
     }
+
 
     // Helper method to create a new account
     private Accounts createNewAccount(Customer customer) {
@@ -68,4 +73,61 @@ public class AccountServiceImpl implements IAccountServices {
 
         return newAccount;
     }
+
+    @Override
+    public CustomerDto fetchAccount(String mobileNumber) {
+        Customer customerDetails = customerRepository.findByMobileNumber(mobileNumber).orElseThrow(
+                () ->  new ResourceNotFound("Customer" , "MobileNumber" , mobileNumber)
+        );
+
+        Accounts foundAccount = accountRepository
+                .findByCustomerId(customerDetails.getCustomerId())
+                .orElseThrow(() -> new ResourceNotFound("Account", "CustomerId", customerDetails.getCustomerId().toString()));
+
+
+        CustomerDto customerDto =CustomerMapper.mapToCustomerDto(customerDetails , new CustomerDto());
+        customerDto.setAccountDto(AccountMapper.mapToAccountDto(foundAccount , new AccountDto()));
+
+        return  customerDto;
+    }
+
+    @Override
+    public boolean updateAccount(CustomerDto customerDto) {
+        boolean updatedAccount = false;
+
+        AccountDto accountDto = customerDto.getAccountDto();
+
+        if (accountDto!= null ){
+            Accounts accounts = accountRepository.findByAccountNumber(accountDto.getAccountNumber()).orElseThrow(() -> new ResourceNotFound("Account" , "AcountNumber" , accountDto.getAccountNumber().toString() ));
+
+            AccountMapper.mapToAccountsEntity(accountDto , accounts);
+            accounts = accountRepository.save(accounts);
+
+            Long customerId = accounts.getCustomerId();
+            Customer customer= customerRepository.findById(customerId).orElseThrow(
+                    () ->  new ResourceNotFound("Customer" , "CustomerId" , customerId.toString())
+            );
+
+            CustomerMapper.mapToCustomer(customerDto , customer);
+            customerRepository.save(customer);
+            updatedAccount = true;
+         }
+
+        return updatedAccount;
+    }
+
+    @Override
+    public boolean deleteAccount(String mobileNumber) {
+
+        Customer foundCustomer = customerRepository.findByMobileNumber(mobileNumber).orElseThrow(
+                () ->  new ResourceNotFound("Customer" , "MobileNumber" , mobileNumber)
+        );
+
+        accountRepository.deleteByCustomerId(foundCustomer.getCustomerId());
+        customerRepository.deleteById(foundCustomer.getCustomerId());
+
+        return true;
+    }
+
+
 }

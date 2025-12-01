@@ -1,9 +1,16 @@
 package com.ddey.accounts.dto;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
+
 public class AccountDto {
 
+    @NotEmpty(message = "Account number can not be emplty")
+    @Pattern(regexp = "^[0-9]{10}$", message = "Account number must be 12 digits")
     private Long accountNumber;
+    @NotEmpty(message = "Account type can not be emplty")
     private String accountType;
+    @NotEmpty(message = "Account branch Addres can not be emplty")
     private String branchAddress;
 
     // No-argument constructor
