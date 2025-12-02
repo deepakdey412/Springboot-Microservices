@@ -32,10 +32,8 @@ public class AccountServiceImpl implements IAccountServices {
 
     @Override
     public void createAccount(CustomerDto customerDto) {
-        // Map DTO to Entity
         Customer customer = CustomerMapper.mapToCustomer(customerDto, new Customer());
 
-        // Check if customer already exists
         Optional<Customer> optionalCustomer = customerRepository
                 .findByMobileNumberAndEmail(customer.getMobileNumber(), customer.getEmail());
 
@@ -43,14 +41,9 @@ public class AccountServiceImpl implements IAccountServices {
             throw new CustomerAlreadyExist("Customer already exists with mobile number "
                     + customerDto.getMobileNumber());
         }
-        customer.setCreatedAt(LocalDateTime.now());
-        customer.setUpdatedAt(LocalDateTime.now());
-        customer.setCreatedBy("Bank PO");
-        customer.setUpdatedBy("Bank Manager");
-        // Save new customer
+
         Customer savedCustomer = customerRepository.save(customer);
 
-        // Create and save account for the customer
         accountRepository.save(createNewAccount(savedCustomer));
     }
 
@@ -63,11 +56,6 @@ public class AccountServiceImpl implements IAccountServices {
         // Generate a 10-digit random account number
         long randomAccountNumber = 1_000_000_000L + (long) new Random().nextInt(900_000_000);
         newAccount.setAccountNumber(randomAccountNumber);
-
-        // Set timestamps
-        newAccount.setCreatedAt(LocalDateTime.now());
-        newAccount.setUpdatedAt(LocalDateTime.now());
-
         newAccount.setAccountType(AccountsConstants.SAVINGS);
         newAccount.setBranchAddress(AccountsConstants.ADDRESS);
 
